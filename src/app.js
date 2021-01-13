@@ -1,38 +1,37 @@
 import Vue from 'vue';
 
 document.addEventListener('DOMContentLoaded', () => {
-  new Vue({
-    el: '#app',
-    data: {
-      rates: [],
-      amount: '',
-      rateOne: '',
-      rateTwo: '',
-      base: '',
-    },
 
-    mounted() {
-        this.getRates();
-      },
-      
-    computed: {
-      currencyExchange: function () {
-          const converted = (result * this.rateTwo).toFixed(2);
-          return converted;
+    new Vue({
+        el: '#app',
+        data: {
+            operations: ["Convert from Euros", "Convert to Euros"],
+            selectedOperation: "",
+            rates: {},
+            baseCurrency: "",
+            convertedCurrency: "",
+            amount: 0
+        },
+        computed: {
+            convertFromEuros() {
+                return this.amount * this.rates[this.baseCurrency];
+            },
+            convertToEuros() {
+                return this.amount / this.rates[this.baseCurrency];
+            },
+        },
+        mounted() {
+            fetch('https://api.exchangeratesapi.io/latest')
+                .then(res => res.json())
+                .then(res => {
+                    res.rates['EUR'] = 1;
+                    this.rates = res.rates;
+                })
+        },
+        filters: {
+            twoDecimalPlaces(num) {
+                return num.toFixed(2);
+            }
         }
-      },
-    },
-
-    methods: {
-      getRates: function () {
-        const result = fetch('https://api.exchangeratesapi.io/latest')
-        .then(response => response.json())
-        .then(data => {
-          this.base = data.base, this.rates = data.rates;
-        });
-      },
-
-    },
-
-  });
-});
+    })
+})
